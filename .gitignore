@@ -1,0 +1,63 @@
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── 虚拟环境 ──
+venv/
+env/
+.venv/
+*.virtualenv
+
+# ── 环境配置 ──
+.env
+.env.local
+.env.*.local
+
+# ── Claude Code ──
+.claude/
+
+# ── IDE / 编辑器 ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-workspace
+
+# ── 操作系统 ──
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── 数据库 ──
+*.db
+*.sqlite
+*.sqlite3
+
+# ── 日志 ──
+*.log
+logs/
+
+# ── 临时文件 ──
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# ── Jupyter ──
+.ipynb_checkpoints/
+
+# ── 杂项 ──
+*.pid

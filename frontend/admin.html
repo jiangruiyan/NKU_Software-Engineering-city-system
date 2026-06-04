@@ -12,7 +12,7 @@
   <!-- 侧边栏 -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-title">🏙️ 智能城市生成系统</div>
+      <div class="logo-title">智能城市生成系统</div>
       <div class="logo-sub">管理员控制台</div>
     </div>
     <nav class="sidebar-nav">
@@ -24,6 +24,9 @@
       </div>
       <div class="nav-item" data-page="assets" onclick="switchPage('assets')">
         <span class="icon">📦</span> 资产审核
+      </div>
+      <div class="nav-item" data-page="templates" onclick="switchPage('templates')">
+        <span class="icon">🗂️</span> 场景模板
       </div>
       <div class="nav-item" data-page="password" onclick="switchPage('password')">
         <span class="icon">🔑</span> 修改密码
@@ -41,28 +44,114 @@
   <!-- 主内容 -->
   <main class="main-content">
 
-    <!-- 概览 -->
+    <!-- ═══════════════════ 概览 ═══════════════════ -->
     <div id="page-overview">
       <div class="page-header">
         <h1>系统概览</h1>
-        <p>查看系统当前状态与数据摘要</p>
+        <p>查看系统当前状态与数据摘要，点击模块查看详情</p>
       </div>
-      <div class="stat-grid" id="stat-grid">
-        <div class="stat-card"><div class="stat-label">总用户数</div><div class="stat-value" id="s-total">—</div></div>
-        <div class="stat-card"><div class="stat-label">管理员</div><div class="stat-value" id="s-admin">—</div></div>
-        <div class="stat-card"><div class="stat-label">分析师</div><div class="stat-value" id="s-analyst">—</div></div>
-        <div class="stat-card"><div class="stat-label">建模师</div><div class="stat-value" id="s-modeler">—</div></div>
-        <div class="stat-card"><div class="stat-label">资产总数</div><div class="stat-value" id="s-assets">—</div></div>
-        <div class="stat-card"><div class="stat-label">待审核</div><div class="stat-value" id="s-pending" style="color:var(--warning)">—</div></div>
-        <div class="stat-card"><div class="stat-label">场景模板</div><div class="stat-value" id="s-templates">—</div></div>
+
+      <!-- 用户概览 -->
+      <div class="overview-section">
+        <div class="overview-section-header">
+          <div class="section-icon icon-users">👥</div>
+          <span class="section-label">用户概览</span>
+          <span class="section-sub" id="overview-user-sub"></span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card clickable card-accent-blue" onclick="goToUsers()">
+            <div class="stat-card-icon">👤</div>
+            <div class="stat-label">总用户数</div>
+            <div class="stat-value" id="s-total">—</div>
+            <div class="stat-hint">查看全部用户 →</div>
+          </div>
+          <div class="stat-card clickable card-accent-blue" onclick="goToUsers('admin')">
+            <div class="stat-card-icon">🛡️</div>
+            <div class="stat-label">管理员</div>
+            <div class="stat-value" id="s-admin">—</div>
+            <div class="stat-hint">查看管理员详情 →</div>
+          </div>
+          <div class="stat-card clickable card-accent-blue" onclick="goToUsers('analyst')">
+            <div class="stat-card-icon">📈</div>
+            <div class="stat-label">分析师</div>
+            <div class="stat-value" id="s-analyst">—</div>
+            <div class="stat-hint">查看分析师详情 →</div>
+          </div>
+          <div class="stat-card clickable card-accent-blue" onclick="goToUsers('modeler')">
+            <div class="stat-card-icon">🎨</div>
+            <div class="stat-label">建模师</div>
+            <div class="stat-value" id="s-modeler">—</div>
+            <div class="stat-hint">查看建模师详情 →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 资产概览 -->
+      <div class="overview-section">
+        <div class="overview-section-header">
+          <div class="section-icon icon-assets">📦</div>
+          <span class="section-label">资产概览</span>
+          <span class="section-sub" id="overview-asset-sub"></span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card clickable card-accent-green" onclick="goToAssets()">
+            <div class="stat-card-icon">📦</div>
+            <div class="stat-label">资产总数</div>
+            <div class="stat-value" id="s-assets">—</div>
+            <div class="stat-hint">查看全部资产 →</div>
+          </div>
+          <div class="stat-card clickable card-accent-amber" onclick="goToAssets('pending')">
+            <div class="stat-card-icon">⏳</div>
+            <div class="stat-label">待审核</div>
+            <div class="stat-value" id="s-pending" style="color:var(--warning)">—</div>
+            <div class="stat-hint">立即前往审核 →</div>
+          </div>
+          <div class="stat-card clickable card-accent-green" onclick="goToAssets('approved')">
+            <div class="stat-card-icon">✅</div>
+            <div class="stat-label">已通过</div>
+            <div class="stat-value" id="s-approved">—</div>
+            <div class="stat-hint">查看已通过资产 →</div>
+          </div>
+          <div class="stat-card clickable card-accent-red" onclick="goToAssets('rejected')">
+            <div class="stat-card-icon">🚫</div>
+            <div class="stat-label">已拒绝</div>
+            <div class="stat-value" id="s-rejected">—</div>
+            <div class="stat-hint">查看已拒绝资产 →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模板概览 -->
+      <div class="overview-section">
+        <div class="overview-section-header">
+          <div class="section-icon icon-templates">🗂️</div>
+          <span class="section-label">模板概览</span>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card clickable card-accent-amber" onclick="goToTemplates()">
+            <div class="stat-card-icon">🗂️</div>
+            <div class="stat-label">场景模板</div>
+            <div class="stat-value" id="s-templates">—</div>
+            <div class="stat-hint">查看全部模板 →</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- 用户管理 -->
+    <!-- ═══════════════════ 用户管理 ═══════════════════ -->
     <div id="page-users" style="display:none">
       <div class="page-header">
         <h1>用户管理</h1>
         <p>新增、编辑或删除系统用户</p>
+      </div>
+      <!-- 筛选栏 -->
+      <div class="filter-bar" id="user-filter-bar">
+        <span class="filter-label">按角色筛选：</span>
+        <span class="filter-chip" data-role="" onclick="setUserFilter('')">全部</span>
+        <span class="filter-chip" data-role="admin" onclick="setUserFilter('admin')">🛡️ 管理员</span>
+        <span class="filter-chip" data-role="analyst" onclick="setUserFilter('analyst')">📈 分析师</span>
+        <span class="filter-chip" data-role="modeler" onclick="setUserFilter('modeler')">🎨 建模师</span>
+        <button class="filter-clear" id="user-filter-clear" style="display:none" onclick="setUserFilter('')">✕ 清除筛选</button>
       </div>
       <div class="card">
         <div class="card-title">➕ 新增用户</div>
@@ -80,7 +169,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-title">👥 用户列表</div>
+        <div class="card-title" id="user-list-title">👥 用户列表</div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>注册时间</th><th>操作</th></tr></thead>
@@ -90,14 +179,23 @@
       </div>
     </div>
 
-    <!-- 资产审核 -->
+    <!-- ═══════════════════ 资产审核 ═══════════════════ -->
     <div id="page-assets" style="display:none">
       <div class="page-header">
         <h1>资产审核</h1>
         <p>审核建模师提交的插件与资产</p>
       </div>
+      <!-- 筛选栏 -->
+      <div class="filter-bar" id="asset-filter-bar">
+        <span class="filter-label">按状态筛选：</span>
+        <span class="filter-chip" data-status="" onclick="setAssetFilter('')">全部</span>
+        <span class="filter-chip" data-status="pending" onclick="setAssetFilter('pending')">⏳ 待审核</span>
+        <span class="filter-chip" data-status="approved" onclick="setAssetFilter('approved')">✅ 已通过</span>
+        <span class="filter-chip" data-status="rejected" onclick="setAssetFilter('rejected')">🚫 已拒绝</span>
+        <button class="filter-clear" id="asset-filter-clear" style="display:none" onclick="setAssetFilter('')">✕ 清除筛选</button>
+      </div>
       <div class="card">
-        <div class="card-title">📦 待审核资产</div>
+        <div class="card-title" id="asset-list-title">📦 全部资产</div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>名称</th><th>类型</th><th>提交人</th><th>状态</th><th>提交时间</th><th>操作</th></tr></thead>
@@ -107,7 +205,24 @@
       </div>
     </div>
 
-    <!-- 修改密码 -->
+    <!-- ═══════════════════ 场景模板（查看） ═══════════════════ -->
+    <div id="page-templates" style="display:none">
+      <div class="page-header">
+        <h1>场景模板</h1>
+        <p>查看系统中所有已创建的场景生成模板</p>
+      </div>
+      <div class="card">
+        <div class="card-title">🗂️ 模板列表</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>编号</th><th>名称</th><th>树木</th><th>道路类型</th><th>座椅</th><th>创建人</th><th>创建时间</th><th>描述</th></tr></thead>
+            <tbody id="template-tbody"><tr><td colspan="8" class="empty">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ 修改密码 ═══════════════════ -->
     <div id="page-password" style="display:none">
       <div class="page-header"><h1>修改密码</h1></div>
       <div class="card" style="max-width:400px">
@@ -126,41 +241,106 @@
 requireRole('admin');
 document.getElementById('sidebar-uname').textContent = getUsername();
 
-const pages = ['overview', 'users', 'assets', 'password'];
-function switchPage(name) {
+const pages = ['overview', 'users', 'assets', 'templates', 'password'];
+
+// ── 当前筛选状态 ──
+let currentUserFilter = '';
+let currentAssetFilter = '';
+
+// ── 页面切换 ──
+function switchPage(name, filter) {
   pages.forEach(p => {
     document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
     document.querySelector(`[data-page="${p}"]`).classList.toggle('active', p === name);
   });
   if (name === 'overview') loadStats();
-  if (name === 'users') loadUsers();
-  if (name === 'assets') loadAssets();
+  if (name === 'users') {
+    if (filter !== undefined) {
+      currentUserFilter = filter;
+      updateUserFilterUI();
+    }
+    loadUsers();
+  }
+  if (name === 'assets') {
+    if (filter !== undefined) {
+      currentAssetFilter = filter;
+      updateAssetFilterUI();
+    }
+    loadAssets();
+  }
+  if (name === 'templates') loadTemplates();
 }
 
-// ── 统计 ──
+// ── 从概览跳转到各模块 ──
+function goToUsers(role) {
+  switchPage('users', role || '');
+}
+
+function goToAssets(status) {
+  switchPage('assets', status || '');
+}
+
+function goToTemplates() {
+  switchPage('templates');
+}
+
+// ═══════════════════ 统计 ═══════════════════
 async function loadStats() {
   const res = await apiFetch('/stats');
   if (!res) return;
   const d = await res.json();
-  document.getElementById('s-total').textContent    = d.users.total;
-  document.getElementById('s-admin').textContent    = d.users.admin;
-  document.getElementById('s-analyst').textContent  = d.users.analyst;
-  document.getElementById('s-modeler').textContent  = d.users.modeler;
-  document.getElementById('s-assets').textContent   = d.assets.total;
-  document.getElementById('s-pending').textContent  = d.assets.pending;
+  document.getElementById('s-total').textContent     = d.users.total;
+  document.getElementById('s-admin').textContent     = d.users.admin;
+  document.getElementById('s-analyst').textContent   = d.users.analyst;
+  document.getElementById('s-modeler').textContent   = d.users.modeler;
+  document.getElementById('s-assets').textContent    = d.assets.total;
+  document.getElementById('s-pending').textContent   = d.assets.pending;
+  document.getElementById('s-approved').textContent  = d.assets.approved;
+  document.getElementById('s-rejected').textContent  = d.assets.rejected || 0;
   document.getElementById('s-templates').textContent = d.templates.total;
+
+  // 概览分区副标题
+  document.getElementById('overview-user-sub').textContent =
+    `共 ${d.users.total} 人 · ${d.users.admin} 管理员 · ${d.users.analyst} 分析师 · ${d.users.modeler} 建模师`;
+  document.getElementById('overview-asset-sub').textContent =
+    `共 ${d.assets.total} 件 · ${d.assets.pending} 待审 · ${d.assets.approved} 通过`;
 }
 
-// ── 用户 ──
+// ═══════════════════ 用户管理 ═══════════════════
 const roleLabel = { admin: '管理员', analyst: '行业分析师', modeler: '场景建模师' };
 const roleBadge = { admin: 'badge-admin', analyst: 'badge-analyst', modeler: 'badge-modeler' };
 
+function updateUserFilterUI() {
+  document.querySelectorAll('#user-filter-bar .filter-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.role === currentUserFilter);
+  });
+  document.getElementById('user-filter-clear').style.display = currentUserFilter ? 'inline-block' : 'none';
+  // 更新列表标题
+  const title = document.getElementById('user-list-title');
+  if (currentUserFilter) {
+    title.textContent = '👥 ' + roleLabel[currentUserFilter] + '列表';
+  } else {
+    title.textContent = '👥 用户列表';
+  }
+}
+
+function setUserFilter(role) {
+  currentUserFilter = role;
+  updateUserFilterUI();
+  loadUsers();
+}
+
 async function loadUsers() {
-  const res = await apiFetch('/users');
+  const url = '/users' + (currentUserFilter ? '?role=' + encodeURIComponent(currentUserFilter) : '');
+  const res = await apiFetch(url);
   if (!res) return;
   const users = await res.json();
   const tbody = document.getElementById('user-tbody');
-  if (!users.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">暂无用户</td></tr>'; return; }
+  if (!users.length) {
+    const hint = currentUserFilter ? '暂无' + roleLabel[currentUserFilter] : '暂无用户';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">' + hint + '</td></tr>';
+    return;
+  }
   tbody.innerHTML = users.map(u => `
     <tr>
       <td>${u.id}</td>
@@ -169,6 +349,10 @@ async function loadUsers() {
       <td>${u.created_at.slice(0, 16)}</td>
       <td>
         <button class="btn-secondary btn-sm" onclick="editUser(${u.id},'${u.role}','${u.username}')">编辑</button>
+        ${u.role !== 'admin' ? `
+        &nbsp;
+        <button class="btn-reset btn-sm" onclick="resetPassword(${u.id},'${u.username}')">🔑 重置密码</button>
+        ` : ''}
         &nbsp;
         <button class="btn-danger" onclick="deleteUser(${u.id},'${u.username}')">删除</button>
       </td>
@@ -211,18 +395,70 @@ function deleteUser(id, username) {
     });
 }
 
-// ── 资产 ──
+function resetPassword(id, username) {
+  showModal(`
+    <h3>🔑 重置密码</h3>
+    <div class="reset-pwd-user">
+      <span class="reset-pwd-label">用户</span>
+      <strong>${username}</strong>
+    </div>
+    <div class="form-row">
+      <label>新密码</label>
+      <input type="password" id="reset-new-pwd" placeholder="请输入新密码（至少4位）" autocomplete="new-password" />
+    </div>
+    <div class="form-row">
+      <label>确认密码</label>
+      <input type="password" id="reset-confirm-pwd" placeholder="再次输入新密码" autocomplete="new-password" />
+    </div>
+    <p class="reset-pwd-hint">新密码将立即生效，请通知用户妥善保管。</p>
+  `, async (overlay) => {
+    const pwd = overlay.querySelector('#reset-new-pwd').value;
+    const confirm = overlay.querySelector('#reset-confirm-pwd').value;
+    if (!pwd || pwd.length < 4) { toast('密码至少需要4个字符', 'error'); return; }
+    if (pwd !== confirm) { toast('两次密码不一致', 'error'); return; }
+    const res = await apiFetch('/users/' + id + '/reset-password', { method: 'PUT', body: JSON.stringify({ new_password: pwd }) });
+    if (res && res.ok) { toast('密码重置成功'); loadUsers(); closeModal(overlay); }
+    else { const e = await res.json(); toast(e.detail || '重置失败', 'error'); }
+  });
+}
+
+// ═══════════════════ 资产审核 ═══════════════════
 const assetTypeLabel = { plugin: '插件', model: '3D模型', texture: '贴图' };
 const assetTypeBadge = { plugin: 'badge-plugin', model: 'badge-model', texture: 'badge-texture' };
 const statusLabel = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
 const statusBadge = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected' };
 
+function updateAssetFilterUI() {
+  document.querySelectorAll('#asset-filter-bar .filter-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.status === currentAssetFilter);
+  });
+  document.getElementById('asset-filter-clear').style.display = currentAssetFilter ? 'inline-block' : 'none';
+  // 更新列表标题
+  const title = document.getElementById('asset-list-title');
+  if (currentAssetFilter) {
+    title.textContent = '📦 ' + statusLabel[currentAssetFilter] + '资产';
+  } else {
+    title.textContent = '📦 全部资产';
+  }
+}
+
+function setAssetFilter(status) {
+  currentAssetFilter = status;
+  updateAssetFilterUI();
+  loadAssets();
+}
+
 async function loadAssets() {
-  const res = await apiFetch('/assets');
+  const url = '/assets' + (currentAssetFilter ? '?status=' + encodeURIComponent(currentAssetFilter) : '');
+  const res = await apiFetch(url);
   if (!res) return;
   const assets = await res.json();
   const tbody = document.getElementById('asset-tbody');
-  if (!assets.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无资产</td></tr>'; return; }
+  if (!assets.length) {
+    const hint = currentAssetFilter ? '暂无' + statusLabel[currentAssetFilter] + '资产' : '暂无资产';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">' + hint + '</td></tr>';
+    return;
+  }
   tbody.innerHTML = assets.map(a => `
     <tr>
       <td>${a.name}</td>
@@ -246,7 +482,29 @@ async function reviewAsset(id, status) {
   else toast('操作失败', 'error');
 }
 
-// ── 密码 ──
+// ═══════════════════ 场景模板（管理员只读查看） ═══════════════════
+const roadLabel = { standard:'标准双向道路', highway:'快速路', narrow:'狭窄街道', pedestrian:'步行街' };
+
+async function loadTemplates() {
+  const res = await apiFetch('/templates');
+  if (!res) return;
+  const list = await res.json();
+  const tbody = document.getElementById('template-tbody');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">暂无场景模板</td></tr>'; return; }
+  tbody.innerHTML = list.map(t => `
+    <tr>
+      <td><strong>#${t.template_no}</strong></td>
+      <td>${t.name}</td>
+      <td>${t.tree_count}</td>
+      <td>${roadLabel[t.road_type] || t.road_type}</td>
+      <td>${t.seat_count}</td>
+      <td>${t.created_by || '—'}</td>
+      <td>${t.created_at.slice(0,16)}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${t.description || ''}">${t.description || '—'}</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════ 密码 ═══════════════════
 async function changePassword() {
   const old_password = document.getElementById('old-pwd').value;
   const new_password = document.getElementById('new-pwd').value;
@@ -258,6 +516,7 @@ async function changePassword() {
   else { const e = await res.json(); toast(e.detail || '修改失败', 'error'); }
 }
 
+// ── 初始化 ──
 loadStats();
 </script>
 </body>

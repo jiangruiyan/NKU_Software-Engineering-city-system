@@ -66,10 +66,13 @@ def change_password(req: ChangePasswordRequest, current=Depends(get_current_user
 
 # ── 用户管理（管理员） ────────────────────────────────────────────
 @app.get("/api/users")
-def list_users(current=Depends(get_current_user), db: Session = Depends(get_db)):
+def list_users(role: Optional[str] = None, current=Depends(get_current_user), db: Session = Depends(get_db)):
     if current["role"] != "admin":
         raise HTTPException(status_code=403, detail="无权限")
-    users = db.query(models.User).all()
+    query = db.query(models.User)
+    if role:
+        query = query.filter(models.User.role == role)
+    users = query.all()
     return [{"id": u.id, "username": u.username, "role": u.role,
              "created_at": str(u.created_at)} for u in users]
 
@@ -114,10 +117,31 @@ def update_user(user_id: int, req: UpdateUserRequest, current=Depends(get_curren
     db.commit()
     return {"message": "更新成功"}
 
+class ResetPasswordRequest(BaseModel):
+    new_password: str
+
+@app.put("/api/users/{user_id}/reset-password")
+def reset_user_password(user_id: int, req: ResetPasswordRequest, current=Depends(get_current_user), db: Session = Depends(get_db)):
+    if current["role"] != "admin":
+        raise HTTPException(status_code=403, detail="无权限")
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    if user.role == "admin":
+        raise HTTPException(status_code=403, detail="不能重置管理员的密码")
+    if len(req.new_password) < 4:
+        raise HTTPException(status_code=400, detail="密码至少需要4个字符")
+    user.hashed_password = hash_password(req.new_password)
+    db.commit()
+    return {"message": "密码重置成功"}
+
 # ── 资产审核（管理员） ────────────────────────────────────────────
 @app.get("/api/assets")
-def list_assets(current=Depends(get_current_user), db: Session = Depends(get_db)):
-    assets = db.query(models.Asset).all()
+def list_assets(status: Optional[str] = None, current=Depends(get_current_user), db: Session = Depends(get_db)):
+    query = db.query(models.Asset)
+    if status:
+        query = query.filter(models.Asset.status == status)
+    assets = query.all()
     return [{"id": a.id, "name": a.name, "type": a.type, "status": a.status,
              "submitted_by": a.submitted_by, "description": a.description,
              "created_at": str(a.created_at)} for a in assets]
@@ -146,10 +170,11 @@ def get_stats(current=Depends(get_current_user), db: Session = Depends(get_db)):
     total_assets = db.query(models.Asset).count()
     pending_assets = db.query(models.Asset).filter(models.Asset.status == 'pending').count()
     approved_assets = db.query(models.Asset).filter(models.Asset.status == 'approved').count()
+    rejected_assets = db.query(models.Asset).filter(models.Asset.status == 'rejected').count()
     total_templates = db.query(models.SceneTemplate).count()
     return {
         "users": {"total": total_users, "admin": admin_count, "analyst": analyst_count, "modeler": modeler_count},
-        "assets": {"total": total_assets, "pending": pending_assets, "approved": approved_assets},
+        "assets": {"total": total_assets, "pending": pending_assets, "approved": approved_assets, "rejected": rejected_assets},
         "templates": {"total": total_templates}
     }
 

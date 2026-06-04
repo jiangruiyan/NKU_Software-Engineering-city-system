@@ -1,4 +1,4 @@
 @echo off
 cd /d .\backend
-..\venv\Scripts\uvicorn.exe main:app --reload --host 0.0.0.0
+..\venv\Scripts\python.exe -m uvicorn main:app --reload --host 0.0.0.0
 pause
