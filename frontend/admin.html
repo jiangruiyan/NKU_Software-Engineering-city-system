@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>管理员控制台 · 智能城市生成系统</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">🏙️ 智能城市生成系统</div>
+      <div class="logo-sub">管理员控制台</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="overview" onclick="switchPage('overview')">
+        <span class="icon">📊</span> 概览
+      </div>
+      <div class="nav-item" data-page="users" onclick="switchPage('users')">
+        <span class="icon">👥</span> 用户管理
+      </div>
+      <div class="nav-item" data-page="assets" onclick="switchPage('assets')">
+        <span class="icon">📦</span> 资产审核
+      </div>
+      <div class="nav-item" data-page="password" onclick="switchPage('password')">
+        <span class="icon">🔑</span> 修改密码
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="uname" id="sidebar-uname">—</div>
+        <div class="urole">系统管理员</div>
+      </div>
+      <button class="btn-logout" onclick="logout()">退出登录</button>
+    </div>
+  </aside>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+
+    <!-- 概览 -->
+    <div id="page-overview">
+      <div class="page-header">
+        <h1>系统概览</h1>
+        <p>查看系统当前状态与数据摘要</p>
+      </div>
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card"><div class="stat-label">总用户数</div><div class="stat-value" id="s-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">管理员</div><div class="stat-value" id="s-admin">—</div></div>
+        <div class="stat-card"><div class="stat-label">分析师</div><div class="stat-value" id="s-analyst">—</div></div>
+        <div class="stat-card"><div class="stat-label">建模师</div><div class="stat-value" id="s-modeler">—</div></div>
+        <div class="stat-card"><div class="stat-label">资产总数</div><div class="stat-value" id="s-assets">—</div></div>
+        <div class="stat-card"><div class="stat-label">待审核</div><div class="stat-value" id="s-pending" style="color:var(--warning)">—</div></div>
+        <div class="stat-card"><div class="stat-label">场景模板</div><div class="stat-value" id="s-templates">—</div></div>
+      </div>
+    </div>
+
+    <!-- 用户管理 -->
+    <div id="page-users" style="display:none">
+      <div class="page-header">
+        <h1>用户管理</h1>
+        <p>新增、编辑或删除系统用户</p>
+      </div>
+      <div class="card">
+        <div class="card-title">➕ 新增用户</div>
+        <div class="form-inline">
+          <div class="form-row"><label>用户名</label><input id="new-uname" placeholder="用户名" /></div>
+          <div class="form-row"><label>密码</label><input id="new-upwd" type="password" placeholder="初始密码" /></div>
+          <div class="form-row"><label>角色</label>
+            <select id="new-urole">
+              <option value="admin">管理员</option>
+              <option value="analyst">行业分析师</option>
+              <option value="modeler">场景建模师</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="createUser()">添加</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">👥 用户列表</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>用户名</th><th>角色</th><th>注册时间</th><th>操作</th></tr></thead>
+            <tbody id="user-tbody"><tr><td colspan="5" class="empty">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 资产审核 -->
+    <div id="page-assets" style="display:none">
+      <div class="page-header">
+        <h1>资产审核</h1>
+        <p>审核建模师提交的插件与资产</p>
+      </div>
+      <div class="card">
+        <div class="card-title">📦 待审核资产</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>名称</th><th>类型</th><th>提交人</th><th>状态</th><th>提交时间</th><th>操作</th></tr></thead>
+            <tbody id="asset-tbody"><tr><td colspan="6" class="empty">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 修改密码 -->
+    <div id="page-password" style="display:none">
+      <div class="page-header"><h1>修改密码</h1></div>
+      <div class="card" style="max-width:400px">
+        <div class="form-row"><label>原密码</label><input type="password" id="old-pwd" /></div>
+        <div class="form-row"><label>新密码</label><input type="password" id="new-pwd" /></div>
+        <div class="form-row"><label>确认新密码</label><input type="password" id="confirm-pwd" /></div>
+        <button class="btn-primary" onclick="changePassword()">保存修改</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="common.js"></script>
+<script>
+requireRole('admin');
+document.getElementById('sidebar-uname').textContent = getUsername();
+
+const pages = ['overview', 'users', 'assets', 'password'];
+function switchPage(name) {
+  pages.forEach(p => {
+    document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
+    document.querySelector(`[data-page="${p}"]`).classList.toggle('active', p === name);
+  });
+  if (name === 'overview') loadStats();
+  if (name === 'users') loadUsers();
+  if (name === 'assets') loadAssets();
+}
+
+// ── 统计 ──
+async function loadStats() {
+  const res = await apiFetch('/stats');
+  if (!res) return;
+  const d = await res.json();
+  document.getElementById('s-total').textContent    = d.users.total;
+  document.getElementById('s-admin').textContent    = d.users.admin;
+  document.getElementById('s-analyst').textContent  = d.users.analyst;
+  document.getElementById('s-modeler').textContent  = d.users.modeler;
+  document.getElementById('s-assets').textContent   = d.assets.total;
+  document.getElementById('s-pending').textContent  = d.assets.pending;
+  document.getElementById('s-templates').textContent = d.templates.total;
+}
+
+// ── 用户 ──
+const roleLabel = { admin: '管理员', analyst: '行业分析师', modeler: '场景建模师' };
+const roleBadge = { admin: 'badge-admin', analyst: 'badge-analyst', modeler: 'badge-modeler' };
+
+async function loadUsers() {
+  const res = await apiFetch('/users');
+  if (!res) return;
+  const users = await res.json();
+  const tbody = document.getElementById('user-tbody');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">暂无用户</td></tr>'; return; }
+  tbody.innerHTML = users.map(u => `
+    <tr>
+      <td>${u.id}</td>
+      <td>${u.username}</td>
+      <td><span class="badge ${roleBadge[u.role]}">${roleLabel[u.role]}</span></td>
+      <td>${u.created_at.slice(0, 16)}</td>
+      <td>
+        <button class="btn-secondary btn-sm" onclick="editUser(${u.id},'${u.role}','${u.username}')">编辑</button>
+        &nbsp;
+        <button class="btn-danger" onclick="deleteUser(${u.id},'${u.username}')">删除</button>
+      </td>
+    </tr>`).join('');
+}
+
+async function createUser() {
+  const username = document.getElementById('new-uname').value.trim();
+  const password = document.getElementById('new-upwd').value;
+  const role     = document.getElementById('new-urole').value;
+  if (!username || !password) { toast('请填写完整', 'error'); return; }
+  const res = await apiFetch('/users', { method: 'POST', body: JSON.stringify({ username, password, role }) });
+  if (res && res.ok) { toast('用户创建成功'); loadUsers(); document.getElementById('new-uname').value = ''; document.getElementById('new-upwd').value = ''; }
+  else { const e = await res.json(); toast(e.detail || '创建失败', 'error'); }
+}
+
+function editUser(id, currentRole, username) {
+  showModal(`
+    <h3>编辑用户 · ${username}</h3>
+    <div class="form-row"><label>角色</label>
+      <select id="edit-role">
+        <option value="admin" ${currentRole==='admin'?'selected':''}>管理员</option>
+        <option value="analyst" ${currentRole==='analyst'?'selected':''}>行业分析师</option>
+        <option value="modeler" ${currentRole==='modeler'?'selected':''}>场景建模师</option>
+      </select>
+    </div>`, async (overlay) => {
+    const role = overlay.querySelector('#edit-role').value;
+    const res = await apiFetch('/users/' + id, { method: 'PUT', body: JSON.stringify({ role }) });
+    if (res && res.ok) { toast('已更新'); loadUsers(); closeModal(overlay); }
+    else toast('更新失败', 'error');
+  });
+}
+
+function deleteUser(id, username) {
+  showModal(`<h3>确认删除</h3><p style="color:var(--text-dim);margin-top:8px">确定删除用户 <strong>${username}</strong> 吗？此操作不可撤销。</p>`,
+    async (overlay) => {
+      const res = await apiFetch('/users/' + id, { method: 'DELETE' });
+      if (res && res.ok) { toast('已删除'); loadUsers(); closeModal(overlay); }
+      else toast('删除失败', 'error');
+    });
+}
+
+// ── 资产 ──
+const assetTypeLabel = { plugin: '插件', model: '3D模型', texture: '贴图' };
+const assetTypeBadge = { plugin: 'badge-plugin', model: 'badge-model', texture: 'badge-texture' };
+const statusLabel = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
+const statusBadge = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected' };
+
+async function loadAssets() {
+  const res = await apiFetch('/assets');
+  if (!res) return;
+  const assets = await res.json();
+  const tbody = document.getElementById('asset-tbody');
+  if (!assets.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty">暂无资产</td></tr>'; return; }
+  tbody.innerHTML = assets.map(a => `
+    <tr>
+      <td>${a.name}</td>
+      <td><span class="badge ${assetTypeBadge[a.type]}">${assetTypeLabel[a.type]||a.type}</span></td>
+      <td>${a.submitted_by || '—'}</td>
+      <td><span class="badge ${statusBadge[a.status]}">${statusLabel[a.status]}</span></td>
+      <td>${a.created_at.slice(0,16)}</td>
+      <td>
+        ${a.status === 'pending' ? `
+          <button class="btn-primary btn-sm" onclick="reviewAsset(${a.id},'approved')">通过</button>
+          &nbsp;
+          <button class="btn-danger" onclick="reviewAsset(${a.id},'rejected')">拒绝</button>
+        ` : '—'}
+      </td>
+    </tr>`).join('');
+}
+
+async function reviewAsset(id, status) {
+  const res = await apiFetch('/assets/' + id + '/status', { method: 'PUT', body: JSON.stringify({ status }) });
+  if (res && res.ok) { toast(status === 'approved' ? '已通过' : '已拒绝'); loadAssets(); }
+  else toast('操作失败', 'error');
+}
+
+// ── 密码 ──
+async function changePassword() {
+  const old_password = document.getElementById('old-pwd').value;
+  const new_password = document.getElementById('new-pwd').value;
+  const confirm      = document.getElementById('confirm-pwd').value;
+  if (!old_password || !new_password) { toast('请填写完整', 'error'); return; }
+  if (new_password !== confirm) { toast('两次密码不一致', 'error'); return; }
+  const res = await apiFetch('/change-password', { method: 'POST', body: JSON.stringify({ old_password, new_password }) });
+  if (res && res.ok) { toast('密码修改成功'); ['old-pwd','new-pwd','confirm-pwd'].forEach(id => document.getElementById(id).value=''); }
+  else { const e = await res.json(); toast(e.detail || '修改失败', 'error'); }
+}
+
+loadStats();
+</script>
+</body>
+</html>

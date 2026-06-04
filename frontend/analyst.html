@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>行业分析师 · 智能城市生成系统</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">🏙️ 智能城市生成系统</div>
+      <div class="logo-sub">行业分析师工作台</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="dashboard" onclick="switchPage('dashboard')">
+        <span class="icon">📈</span> 数据看板
+      </div>
+      <div class="nav-item" data-page="report" onclick="switchPage('report')">
+        <span class="icon">📄</span> 报告生成
+      </div>
+      <div class="nav-item" data-page="password" onclick="switchPage('password')">
+        <span class="icon">🔑</span> 修改密码
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="uname" id="sidebar-uname">—</div>
+        <div class="urole">行业分析师</div>
+      </div>
+      <button class="btn-logout" onclick="logout()">退出登录</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- 数据看板 -->
+    <div id="page-dashboard">
+      <div class="page-header">
+        <h1>数据看板</h1>
+        <p>系统运营数据概览与图表分析</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">总用户数</div><div class="stat-value" id="s-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">资产总数</div><div class="stat-value" id="s-assets">—</div></div>
+        <div class="stat-card"><div class="stat-label">审核通过率</div><div class="stat-value" id="s-rate">—</div><div class="stat-sub">已通过 / 总提交</div></div>
+        <div class="stat-card"><div class="stat-label">场景模板数</div><div class="stat-value" id="s-templates">—</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-title">👥 用户角色分布</div>
+          <div class="chart-wrap"><canvas id="chart-role"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📦 资产审核状态</div>
+          <div class="chart-wrap"><canvas id="chart-asset"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 报告生成 -->
+    <div id="page-report" style="display:none">
+      <div class="page-header">
+        <h1>报告生成</h1>
+        <p>根据当前系统数据生成分析报告</p>
+      </div>
+      <div class="card" style="max-width:500px">
+        <div class="card-title">📄 生成系统分析报告</div>
+        <div class="form-row">
+          <label>报告标题</label>
+          <input id="report-title" value="智能城市生成系统运营分析报告" />
+        </div>
+        <div class="form-row">
+          <label>报告时间范围</label>
+          <select id="report-range">
+            <option value="all">全部数据</option>
+            <option value="month">近一个月</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>备注说明（可选）</label>
+          <textarea id="report-note" placeholder="可输入报告背景说明…"></textarea>
+        </div>
+        <button class="btn-primary" onclick="generateReport()">生成并下载报告</button>
+      </div>
+      <!-- 报告预览 -->
+      <div class="card" id="report-preview" style="display:none;max-width:700px">
+        <div class="card-title">预览</div>
+        <div id="report-content" style="font-size:13px;line-height:1.8;color:var(--text)"></div>
+      </div>
+    </div>
+
+    <!-- 修改密码 -->
+    <div id="page-password" style="display:none">
+      <div class="page-header"><h1>修改密码</h1></div>
+      <div class="card" style="max-width:400px">
+        <div class="form-row"><label>原密码</label><input type="password" id="old-pwd" /></div>
+        <div class="form-row"><label>新密码</label><input type="password" id="new-pwd" /></div>
+        <div class="form-row"><label>确认新密码</label><input type="password" id="confirm-pwd" /></div>
+        <button class="btn-primary" onclick="changePassword()">保存修改</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="common.js"></script>
+<script>
+requireRole('analyst');
+document.getElementById('sidebar-uname').textContent = getUsername();
+
+const pages = ['dashboard', 'report', 'password'];
+function switchPage(name) {
+  pages.forEach(p => {
+    document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
+    document.querySelector(`[data-page="${p}"]`).classList.toggle('active', p === name);
+  });
+  if (name === 'dashboard') loadDashboard();
+}
+
+let roleChart = null, assetChart = null;
+let statsData = null;
+
+async function loadDashboard() {
+  const res = await apiFetch('/stats');
+  if (!res) return;
+  statsData = await res.json();
+  const d = statsData;
+  document.getElementById('s-total').textContent = d.users.total;
+  document.getElementById('s-assets').textContent = d.assets.total;
+  document.getElementById('s-templates').textContent = d.templates.total;
+  const rate = d.assets.total > 0 ? Math.round(d.assets.approved / d.assets.total * 100) + '%' : 'N/A';
+  document.getElementById('s-rate').textContent = rate;
+
+  const colors = ['#5b6cf0','#10b981','#f59e0b'];
+  const chartDefaults = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#64748b', font: { size: 12 } } } }
+  };
+
+  if (roleChart) roleChart.destroy();
+  roleChart = new Chart(document.getElementById('chart-role'), {
+    type: 'doughnut',
+    data: {
+      labels: ['管理员', '行业分析师', '场景建模师'],
+      datasets: [{ data: [d.users.admin, d.users.analyst, d.users.modeler], backgroundColor: colors, borderWidth: 0 }]
+    },
+    options: { ...chartDefaults }
+  });
+
+  if (assetChart) assetChart.destroy();
+  assetChart = new Chart(document.getElementById('chart-asset'), {
+    type: 'bar',
+    data: {
+      labels: ['待审核', '已通过', '总计'],
+      datasets: [{ label: '数量', data: [d.assets.pending, d.assets.approved, d.assets.total],
+        backgroundColor: ['#f59e0b','#10b981','#5b6cf0'], borderRadius: 6, borderWidth: 0 }]
+    },
+    options: {
+      ...chartDefaults,
+      scales: {
+        x: { ticks: { color: '#64748b' }, grid: { color: '#e2e8f0' } },
+        y: { ticks: { color: '#64748b', stepSize: 1 }, grid: { color: '#e2e8f0' } }
+      }
+    }
+  });
+}
+
+async function generateReport() {
+  const title = document.getElementById('report-title').value || '系统分析报告';
+  const note  = document.getElementById('report-note').value;
+  // 先拉最新数据
+  const res = await apiFetch('/stats');
+  if (!res) return;
+  const d = await res.json();
+  const now = new Date().toLocaleString('zh-CN');
+  const rate = d.assets.total > 0 ? Math.round(d.assets.approved / d.assets.total * 100) : 0;
+
+  const content = `
+    <h2 style="font-size:18px;margin-bottom:16px">${title}</h2>
+    <p style="color:var(--text-dim);margin-bottom:20px">生成时间：${now}　　${note ? '说明：' + note : ''}</p>
+    <h3 style="font-size:14px;margin-bottom:10px;color:var(--accent)">一、用户数据</h3>
+    <p>系统共有注册用户 <strong>${d.users.total}</strong> 人，其中系统管理员 ${d.users.admin} 人、行业分析师 ${d.users.analyst} 人、场景建模师 ${d.users.modeler} 人。</p>
+    <h3 style="font-size:14px;margin:16px 0 10px;color:var(--accent)">二、资产数据</h3>
+    <p>系统共收录资产 <strong>${d.assets.total}</strong> 件，其中已通过审核 ${d.assets.approved} 件，待审核 ${d.assets.pending} 件，审核通过率为 <strong>${rate}%</strong>。</p>
+    <h3 style="font-size:14px;margin:16px 0 10px;color:var(--accent)">三、场景模板</h3>
+    <p>系统中建模师已创建场景模板 <strong>${d.templates.total}</strong> 套，可供场景快速初始化调用。</p>
+    <h3 style="font-size:14px;margin:16px 0 10px;color:var(--accent)">四、结论</h3>
+    <p>系统整体运行正常，各角色用户功能齐备，建议持续关注待审核资产积压情况。</p>
+  `;
+  document.getElementById('report-content').innerHTML = content;
+  document.getElementById('report-preview').style.display = 'block';
+
+  // 下载为 HTML 文件
+  const blob = new Blob([`<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><title>${title}</title>
+    <style>body{font-family:sans-serif;max-width:700px;margin:40px auto;color:#333;line-height:1.8}h2,h3{color:#1a1a2e}</style>
+    </head><body>${content}</body></html>`], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = title + '.html';
+  a.click();
+  toast('报告已生成并下载');
+}
+
+async function changePassword() {
+  const old_password = document.getElementById('old-pwd').value;
+  const new_password = document.getElementById('new-pwd').value;
+  const confirm      = document.getElementById('confirm-pwd').value;
+  if (!old_password || !new_password) { toast('请填写完整', 'error'); return; }
+  if (new_password !== confirm) { toast('两次密码不一致', 'error'); return; }
+  const res = await apiFetch('/change-password', { method: 'POST', body: JSON.stringify({ old_password, new_password }) });
+  if (res && res.ok) { toast('密码修改成功'); ['old-pwd','new-pwd','confirm-pwd'].forEach(id => document.getElementById(id).value=''); }
+  else { const e = await res.json(); toast(e.detail || '修改失败', 'error'); }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

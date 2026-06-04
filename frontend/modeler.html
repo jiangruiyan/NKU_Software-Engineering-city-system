@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>场景建模师 · 智能城市生成系统</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-title">🏙️ 智能城市生成系统</div>
+      <div class="logo-sub">场景建模师工作台</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="templates" onclick="switchPage('templates')">
+        <span class="icon">🗂️</span> 场景模板
+      </div>
+      <div class="nav-item" data-page="submit" onclick="switchPage('submit')">
+        <span class="icon">📤</span> 提交资产
+      </div>
+      <div class="nav-item" data-page="blender" onclick="switchPage('blender')">
+        <span class="icon">🎨</span> 进入 Blender
+      </div>
+      <div class="nav-item" data-page="password" onclick="switchPage('password')">
+        <span class="icon">🔑</span> 修改密码
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="uname" id="sidebar-uname">—</div>
+        <div class="urole">场景建模师</div>
+      </div>
+      <button class="btn-logout" onclick="logout()">退出登录</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+
+    <!-- 场景模板 -->
+    <div id="page-templates">
+      <div class="page-header">
+        <h1>场景模板管理</h1>
+        <p>创建和管理城市场景生成模板</p>
+      </div>
+      <div class="card">
+        <div class="card-title">➕ 新建模板</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 20px">
+          <div class="form-row"><label>模板名称</label><input id="t-name" placeholder="如：滨海商业区" /></div>
+          <div class="form-row"><label>模板编号</label><input id="t-no" type="number" placeholder="唯一编号" /></div>
+          <div class="form-row"><label>树木数量</label><input id="t-tree" type="number" value="10" /></div>
+          <div class="form-row"><label>道路类型</label>
+            <select id="t-road">
+              <option value="standard">标准双向道路</option>
+              <option value="highway">快速路</option>
+              <option value="narrow">狭窄街道</option>
+              <option value="pedestrian">步行街</option>
+            </select>
+          </div>
+          <div class="form-row"><label>座椅数量</label><input id="t-seat" type="number" value="5" /></div>
+          <div class="form-row"><label>描述说明</label><input id="t-desc" placeholder="可选" /></div>
+        </div>
+        <button class="btn-primary" onclick="createTemplate()">创建模板</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🗂️ 已有模板</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>编号</th><th>名称</th><th>树木</th><th>道路类型</th><th>座椅</th><th>创建人</th><th>创建时间</th><th>操作</th></tr></thead>
+            <tbody id="template-tbody"><tr><td colspan="8" class="empty">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 提交资产 -->
+    <div id="page-submit" style="display:none">
+      <div class="page-header">
+        <h1>提交资产</h1>
+        <p>向系统提交插件、3D模型或贴图资产，由管理员审核</p>
+      </div>
+      <div class="card" style="max-width:480px">
+        <div class="card-title">📤 新增提交</div>
+        <div class="form-row"><label>资产名称</label><input id="a-name" placeholder="如：路灯-现代款" /></div>
+        <div class="form-row"><label>资产类型</label>
+          <select id="a-type">
+            <option value="plugin">插件</option>
+            <option value="model">3D模型</option>
+            <option value="texture">贴图纹理</option>
+          </select>
+        </div>
+        <div class="form-row"><label>描述说明</label><textarea id="a-desc" placeholder="描述资产用途、来源等"></textarea></div>
+        <button class="btn-primary" onclick="submitAsset()">提交审核</button>
+      </div>
+      <div class="card">
+        <div class="card-title">📋 我的提交记录</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>名称</th><th>类型</th><th>状态</th><th>提交时间</th></tr></thead>
+            <tbody id="my-assets-tbody"><tr><td colspan="4" class="empty">加载中…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 进入 Blender -->
+    <div id="page-blender" style="display:none">
+      <div class="page-header">
+        <h1>进入 Blender 插件系统</h1>
+        <p>启动城市生成插件，开始三维场景建模</p>
+      </div>
+      <div class="blender-card">
+        <div class="blender-icon">🎨</div>
+        <h3>Blender 城市生成插件</h3>
+        <p>点击下方按钮，跳转至 Blender 插件工作界面。<br>请确保本机已安装 Blender 并加载城市生成插件。</p>
+        <button class="btn-blender" onclick="enterBlender()">🚀 启动 Blender 插件</button>
+      </div>
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">💡 使用说明</div>
+        <ol style="padding-left:18px;line-height:2.2;color:var(--text-dim);font-size:13px">
+          <li>确认已安装 Blender 4.x 及城市生成插件</li>
+          <li>在 Blender 偏好设置 → 插件中启用 <strong style="color:var(--text)">City Generator</strong></li>
+          <li>在 3D 视口侧边栏（N 键）找到 <strong style="color:var(--text)">City</strong> 面板</li>
+          <li>输入模板编号，点击"生成场景"即可快速初始化</li>
+          <li>可在场景模板页查看已有模板编号</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- 修改密码 -->
+    <div id="page-password" style="display:none">
+      <div class="page-header"><h1>修改密码</h1></div>
+      <div class="card" style="max-width:400px">
+        <div class="form-row"><label>原密码</label><input type="password" id="old-pwd" /></div>
+        <div class="form-row"><label>新密码</label><input type="password" id="new-pwd" /></div>
+        <div class="form-row"><label>确认新密码</label><input type="password" id="confirm-pwd" /></div>
+        <button class="btn-primary" onclick="changePassword()">保存修改</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Blender 跳转弹窗 -->
+<div class="modal-overlay" id="blender-modal">
+  <div class="modal-box" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:12px">🎨</div>
+    <h3>正在跳转至 Blender 插件系统</h3>
+    <p style="color:var(--text-dim);margin:12px 0 20px;font-size:13px">
+      系统已记录当前用户信息，即将打开 Blender。<br>
+      如未自动打开，请手动启动 Blender。
+    </p>
+    <div style="display:flex;justify-content:center;gap:12px">
+      <button class="btn-secondary" onclick="closeBlenderModal()">关闭</button>
+      <button class="btn-blender" onclick="closeBlenderModal()">已了解</button>
+    </div>
+  </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+requireRole('modeler');
+document.getElementById('sidebar-uname').textContent = getUsername();
+
+const pages = ['templates', 'submit', 'blender', 'password'];
+function switchPage(name) {
+  pages.forEach(p => {
+    document.getElementById('page-' + p).style.display = p === name ? 'block' : 'none';
+    document.querySelector(`[data-page="${p}"]`).classList.toggle('active', p === name);
+  });
+  if (name === 'templates') loadTemplates();
+  if (name === 'submit') { loadMyAssets(); }
+}
+
+// ── 模板 ──
+const roadLabel = { standard:'标准双向道路', highway:'快速路', narrow:'狭窄街道', pedestrian:'步行街' };
+
+async function loadTemplates() {
+  const res = await apiFetch('/templates');
+  if (!res) return;
+  const list = await res.json();
+  const tbody = document.getElementById('template-tbody');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty">暂无模板，点击上方创建</td></tr>'; return; }
+  tbody.innerHTML = list.map(t => `
+    <tr>
+      <td><strong>#${t.template_no}</strong></td>
+      <td>${t.name}</td>
+      <td>${t.tree_count}</td>
+      <td>${roadLabel[t.road_type] || t.road_type}</td>
+      <td>${t.seat_count}</td>
+      <td>${t.created_by || '—'}</td>
+      <td>${t.created_at.slice(0,16)}</td>
+      <td><button class="btn-danger" onclick="deleteTemplate(${t.id})">删除</button></td>
+    </tr>`).join('');
+}
+
+async function createTemplate() {
+  const name       = document.getElementById('t-name').value.trim();
+  const template_no = parseInt(document.getElementById('t-no').value);
+  const tree_count = parseInt(document.getElementById('t-tree').value) || 10;
+  const road_type  = document.getElementById('t-road').value;
+  const seat_count = parseInt(document.getElementById('t-seat').value) || 5;
+  const description = document.getElementById('t-desc').value;
+  if (!name || !template_no) { toast('请填写名称和编号', 'error'); return; }
+  const res = await apiFetch('/templates', { method: 'POST', body: JSON.stringify({ name, template_no, tree_count, road_type, seat_count, description }) });
+  if (res && res.ok) {
+    toast('模板创建成功'); loadTemplates();
+    ['t-name','t-no','t-desc'].forEach(id => document.getElementById(id).value = '');
+  } else {
+    const e = await res.json(); toast(e.detail || '创建失败', 'error');
+  }
+}
+
+function deleteTemplate(id) {
+  showModal('<h3>确认删除</h3><p style="color:var(--text-dim);margin-top:8px">确定删除该模板吗？</p>',
+    async (overlay) => {
+      const res = await apiFetch('/templates/' + id, { method: 'DELETE' });
+      if (res && res.ok) { toast('已删除'); loadTemplates(); closeModal(overlay); }
+      else toast('删除失败', 'error');
+    });
+}
+
+// ── 资产提交 ──
+const assetTypeLabel = { plugin:'插件', model:'3D模型', texture:'贴图' };
+const assetTypeBadge = { plugin:'badge-plugin', model:'badge-model', texture:'badge-texture' };
+const statusLabel    = { pending:'待审核', approved:'已通过', rejected:'已拒绝' };
+const statusBadge    = { pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected' };
+
+async function loadMyAssets() {
+  const res = await apiFetch('/assets');
+  if (!res) return;
+  const all = await res.json();
+  const mine = all.filter(a => a.submitted_by === getUsername());
+  const tbody = document.getElementById('my-assets-tbody');
+  if (!mine.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty">暂无提交记录</td></tr>'; return; }
+  tbody.innerHTML = mine.map(a => `
+    <tr>
+      <td>${a.name}</td>
+      <td><span class="badge ${assetTypeBadge[a.type]}">${assetTypeLabel[a.type]||a.type}</span></td>
+      <td><span class="badge ${statusBadge[a.status]}">${statusLabel[a.status]}</span></td>
+      <td>${a.created_at.slice(0,16)}</td>
+    </tr>`).join('');
+}
+
+async function submitAsset() {
+  const name        = document.getElementById('a-name').value.trim();
+  const type        = document.getElementById('a-type').value;
+  const description = document.getElementById('a-desc').value;
+  if (!name) { toast('请填写资产名称', 'error'); return; }
+  const res = await apiFetch('/assets', { method: 'POST', body: JSON.stringify({ name, type, description }) });
+  if (res && res.ok) {
+    toast('提交成功，等待管理员审核'); loadMyAssets();
+    document.getElementById('a-name').value = ''; document.getElementById('a-desc').value = '';
+  } else toast('提交失败', 'error');
+}
+
+// ── Blender 入口 ──
+function enterBlender() {
+  const modal = document.getElementById('blender-modal');
+  modal.classList.add('show');
+}
+function closeBlenderModal() {
+  document.getElementById('blender-modal').classList.remove('show');
+}
+
+// ── 密码 ──
+async function changePassword() {
+  const old_password = document.getElementById('old-pwd').value;
+  const new_password = document.getElementById('new-pwd').value;
+  const confirm      = document.getElementById('confirm-pwd').value;
+  if (!old_password || !new_password) { toast('请填写完整', 'error'); return; }
+  if (new_password !== confirm) { toast('两次密码不一致', 'error'); return; }
+  const res = await apiFetch('/change-password', { method: 'POST', body: JSON.stringify({ old_password, new_password }) });
+  if (res && res.ok) { toast('密码修改成功'); ['old-pwd','new-pwd','confirm-pwd'].forEach(id => document.getElementById(id).value=''); }
+  else { const e = await res.json(); toast(e.detail || '修改失败', 'error'); }
+}
+
+loadTemplates();
+</script>
+</body>
+</html>
