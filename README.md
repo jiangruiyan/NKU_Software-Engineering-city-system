@@ -73,7 +73,6 @@ uvicorn main:app --reload --port 8000
 ├── backend/
 │   ├── main.py          # FastAPI 入口 & 路由
 │   ├── models.py        # SQLAlchemy 数据模型
-│   ├── schemas.py       # Pydantic 请求模型
 │   ├── database.py      # 数据库连接配置
 │   ├── auth.py          # JWT & 密码哈希
 │   └── init_data.py     # 初始数据脚本
