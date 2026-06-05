@@ -13,7 +13,7 @@
 | 数据库 | MySQL |
 | 认证 | JWT (python-jose) · bcrypt |
 
-## 快速开始
+## 配置方法
 
 ### 1. 环境准备
 
